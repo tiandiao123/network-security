@@ -16,14 +16,15 @@ class ServerProtocol(asyncio.Protocol):
 		self.transport = transport
 		self._deserializer = PacketType.Deserializer()
 
-	def dataReceived(self, data):
+	def data_received(self, data):
+		#print("log first")
 		self._deserializer.update(data)
 		print("server side: data has been received!")
 		for pat in self._deserializer.nextPackets():
 			print(pat)
 
 		print("send feed back to client to say: data has been processed")
-		self.transport.write("Hi client: data has been processed, good to go!")
+		self.transport.write("Hi client: data has been processed, good to go!".encode())
 
 	def connection_lost(self,exc):
 		self.transport = None

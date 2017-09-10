@@ -14,11 +14,14 @@ class ClientProtocol(asyncio.Protocol):
 
 
 	def connection_made(self,transport):
-		transport.write(self.packet.__serialize__())
+		pybytes = self.packet.__serialize__()
+		#print(type(pybytes))
+		#print(pybytes)
+		transport.write(pybytes)
 
 
-	def dataReceived(self, data):
-		print("Got feedback from server side: {} ".format(data))
+	def data_received(self, data):
+		print("Got feedback from server side: {} ".format(data.decode()))
 
 	def connection_lost(self,exc):
 		self.transport = None
