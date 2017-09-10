@@ -2,8 +2,11 @@ import asyncio
 import time
 from playground.network.packet import PacketType
 from playground.network.packet.fieldtypes import STRING, BUFFER
-from playground.network.packet.fieldtypes import NamedPacketType, ComplexFieldType, PacketFields, Uint,StringFieldType, PacketFieldType, ListFieldType
-
+from playground.network.packet.fieldtypes import NamedPacketType, ComplexFieldType, PacketFields, Uint, StringFieldType, PacketFieldType, ListFieldType
+from HTMLParsePacket import HTMLParsePacket
+from playground.asyncio_lib.testing import TestLoopEx
+from playground.network.testing import MockTransportToStorageStream
+from playground.network.testing import MockTransportToProtocol
 
 class HTMLParsePacket(PacketType):
 	DEFINITION_IDENTIFIER = "lab1b.Cuiqing_Li.MyPacket"
@@ -17,64 +20,54 @@ class HTMLParsePacket(PacketType):
 	]
 
 
-def Unit_Test():
-	packet1 = HTMLParsePacket()
-	packet1.file_name = "hello_world.html"
-	packet1.num_file = 1
-	packet1.content = ""
-	packet1.data = b"";
-
-
-	packet2 = HTMLParsePacket()
-	packet2.file_name = "hello_world.html"
-	packet2.num_file = 1;
-	packet2.content = "Hi here is website about world"
-	packet2.data = b"Hi Here is website for you to know the world"
-
-	packet3 = HTMLParsePacket()
-	packet3.file_name = "hello_JHU.html"
-	packet3.num_file = 2
-	packet3.content = ""
-	packet3.data = b""
-
-	pktBytes = packet1.__serialize__() + packet2.__serialize__() + packet3.__serialize__()
-	deserializer = PacketType.Deserializer()
-	print("staring with {} bytes of data".format(len(pktBytes)))
-	while len(pktBytes) > 0:
-		chunk,pktBytes = pktBytes[:10] , pktBytes[10:]
-		deserializer.update(chunk)
-		print("another 10 bytes loaded into deserializer. left = {}".format(len(pktBytes)))
-
-		for packet in deserializer.nextPackets():
-			print("got a packet")
-
-			if packet == packet1:
-				print("this is packet 1")
-			elif packet == packet2:
-				print("this is packet 2")
-			elif packet == packet3:
-				print("this is packet 3")
-
-
-
-class MyProtocol(asyncio.Protocol):
+class ServerProtocol(asyncio.Protocol):
 	def __init__(self):
 		self.transport = None
+		self._deserializer = None
 
 	def connection_made(self,transport):
+		client_name = transport.get_extra_info('peername')
 		self.transport = transport
 		self._deserializer = PacketType.Deserializer()
 
-	def dataReceived(self, data):
+	def data_received(self, data):
+		#print("log first")
 		self._deserializer.update(data)
-		for pat in self._deserializer:
-			pass
-			
+		print("server side: data has been received!")
+		for pat in self._deserializer.nextPackets():
+			print(pat)
+
+		print("send feed back to client to say: data has been processed")
+		self.transport.write("Hi client: data has been processed, good to go!".encode())
 
 	def connection_lost(self,exc):
 		self.transport = None
 
-loop = asyncio.get_event_loop()
-loop.create_server(lambda: MyProtocol(),port = 8000)
-loop.create_connection(lambda: MyProtocol(),host="127.0.0.0.1",port=8000)
 
+class ClientProtocol(asyncio.Protocol):
+	def __init__(self,packet,loop):
+		self.packet = packet
+		self.loop = loop
+
+
+	def connection_made(self,transport):
+		pybytes = self.packet.__serialize__()
+		#print(type(pybytes))
+		#print(pybytes)
+		transport.write(pybytes)
+
+
+	def data_received(self, data):
+		print("Got feedback from server side: {} ".format(data.decode()))
+
+	def connection_lost(self,exc):
+		self.transport = None
+		self.loop.stop()
+
+
+
+
+def BasicUnitTest():
+	asyncio.set_event_loop(TestLoopEx())
+	client = ClientProtocol()
+	server = ServerProtocol()

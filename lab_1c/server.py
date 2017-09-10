@@ -3,7 +3,7 @@ import time
 from playground.network.packet import PacketType
 from playground.network.packet.fieldtypes import STRING, BUFFER
 from playground.network.packet.fieldtypes import NamedPacketType, ComplexFieldType, PacketFields, Uint,StringFieldType, PacketFieldType, ListFieldType
-import HTMLParsePacket
+from HTMLParsePacket import HTMLParsePacket
 
 
 class ServerProtocol(asyncio.Protocol):
