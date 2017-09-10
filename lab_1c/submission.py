@@ -63,10 +63,18 @@ class MyProtocol(asyncio.Protocol):
 
 	def connection_made(self,transport):
 		self.transport = transport
+		self._deserializer = PacketType.Deserializer()
 
 	def dataReceived(self, data):
-		pass
+		self._deserializer.update(data)
+		for pat in self._deserializer:
+			pass
+			
 
 	def connection_lost(self,exc):
-		pass
+		self.transport = None
+
+loop = asyncio.get_event_loop()
+loop.create_server(lambda: MyProtocol(),port = 8000)
+loop.create_connection(lambda: MyProtocol(),host="127.0.0.0.1",port=8000)
 
