@@ -3,7 +3,7 @@ import time
 from playground.network.packet import PacketType
 from playground.network.packet.fieldtypes import STRING, BUFFER
 from playground.network.packet.fieldtypes import NamedPacketType, ComplexFieldType, PacketFields, Uint, StringFieldType, PacketFieldType, ListFieldType
-from HTMLParsePacket import HTMLParsePacket
+#from HTMLParsePacket import HTMLParsePacket
 from playground.asyncio_lib.testing import TestLoopEx
 from playground.network.testing import MockTransportToStorageStream
 from playground.network.testing import MockTransportToProtocol
@@ -45,15 +45,15 @@ class ServerProtocol(asyncio.Protocol):
 
 
 class ClientProtocol(asyncio.Protocol):
-	def __init__(self,packet,loop):
+	def __init__(self,packet):
 		self.packet = packet
-		self.loop = loop
+		# self.transport = None 
 
 
 	def connection_made(self,transport):
 		pybytes = self.packet.__serialize__()
-		#print(type(pybytes))
-		#print(pybytes)
+		# print(type(pybytes))
+		# print(pybytes)
 		transport.write(pybytes)
 
 
@@ -66,8 +66,31 @@ class ClientProtocol(asyncio.Protocol):
 
 
 
+packet1 = HTMLParsePacket()
+packet1.file_name = "hello_guys.html"
+packet1.num_file = 2
+packet1.content = "Hello guys"
+packet1.data = b"Let us Chat";
+
+
+packet2 = HTMLParsePacket()
+packet2.file_name = "hello_world.html"
+packet2.num_file = 1;
+packet2.content = "Hi, here is website about world"
+packet2.data = b"Hi Here is website for you to know the world"
+
 
 def BasicUnitTest():
 	asyncio.set_event_loop(TestLoopEx())
-	client = ClientProtocol()
+	client = ClientProtocol(packet2)
 	server = ServerProtocol()
+	transportToServer = MockTransportToProtocol(server)
+	transportToClient = MockTransportToProtocol(client)
+	server.connection_made(transportToClient)
+	client.connection_made(transportToServer)
+
+
+BasicUnitTest()
+
+
+
