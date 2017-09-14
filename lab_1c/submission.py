@@ -45,9 +45,9 @@ class ServerProtocol(asyncio.Protocol):
 
 
 class ClientProtocol(asyncio.Protocol):
-	def __init__(self,packet,loop):
+	def __init__(self,packet):
 		self.packet = packet
-		self.transport = loop
+		# self.transport = loop
 
 
 	def connection_made(self,transport):
@@ -109,9 +109,9 @@ def BasicUnitTest():
 	client.connection_made(transportToServer)
 
 
-# BasicUnitTest()
+BasicUnitTest()
 
-Normal_Unit_Test()
+# Normal_Unit_Test()
 
 
 

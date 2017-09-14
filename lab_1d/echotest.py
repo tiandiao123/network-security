@@ -47,9 +47,9 @@ class ServerProtocol(asyncio.Protocol):
 
 
 class ClientProtocol(asyncio.Protocol):
-	def __init__(self,packet):
+	def __init__(self,packet,loop):
 		self.packet = packet
-		# self.transport = None 
+		self.transport = None 
 
 
 	def connection_made(self,transport):
@@ -87,7 +87,7 @@ loop = asyncio.get_event_loop()
 loop.set_debug(enabled = True)
 
 if name == "server":
-	coro = playground.getConnector().create_playground_server(lambda: EchoServerProtocol(), 8888)
+	coro = playground.getConnector().create_playground_server(lambda: ServerProtocol(), 8888)
 	server = loop.run_until_complete(coro)
 	print("Echo Server Started at {}".format(server.sockets[0].gethostname()))
 	loop.run_forever()
