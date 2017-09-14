@@ -44,7 +44,8 @@ packet2.data = b"Hi Here is website for you to know the world"
 # coro = loop.create_connection(lambda: ClientProtocol(packet2, loop),
 #                               '127.0.0.1', 8888)
 
-coro = playground.getConnector().create_playground_connection(packet2,"20174.1.1.1",8888)
+# client = ClientProtocol(packet2,loop)
+coro = playground.getConnector().create_playground_connection(lambda: ClientProtocol(packet2, loop),"20174.1.1.1",8888)
 loop.run_until_complete(coro)
 loop.run_forever()
 loop.close()

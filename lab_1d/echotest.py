@@ -7,6 +7,8 @@ from playground.network.packet.fieldtypes import NamedPacketType, ComplexFieldTy
 from playground.asyncio_lib.testing import TestLoopEx
 from playground.network.testing import MockTransportToStorageStream
 from playground.network.testing import MockTransportToProtocol
+from playground.network.common import PlaygroundAddress
+import playground
 
 class HTMLParsePacket(PacketType):
 	DEFINITION_IDENTIFIER = "lab1b.Cuiqing_Li.MyPacket"
@@ -45,9 +47,9 @@ class ServerProtocol(asyncio.Protocol):
 
 
 class ClientProtocol(asyncio.Protocol):
-	def __init__(self,packet,loop):
+	def __init__(self,packet):
 		self.packet = packet
-		self.transport = loop
+		# self.transport = None 
 
 
 	def connection_made(self,transport):
@@ -79,39 +81,23 @@ packet2.content = "Hi, here is website about world"
 packet2.data = b"Hi Here is website for you to know the world"
 
 
-def Normal_Unit_Test():
-	loop = asyncio.get_event_loop()
-	if sys.argv[1]=='server':
-		corotinue = loop.create_server(ServerProtocol,"127.0.0.1",8888)
-		server = loop.run_until_complete(corotinue)
-		print("I am current serving on : {}".format(server.sockets[0].getsockname()))
-		try:
-			loop.run_forever()
-		except KeyboardInterrupt:
-			pass
-		server.close()
-		loop.run_until_complete(server.wait_closed())
-		loop.close()
-	else:
-		coro = loop.create_connection(lambda: ClientProtocol(packet2, loop),'127.0.0.1', 8888)
-		loop.run_until_complete(coro)
-		loop.run_forever()
-		loop.close()
 
+name = sys.argv[1]
+loop = asyncio.get_event_loop()
+loop.set_debug(enabled = True)
 
-def BasicUnitTest():
-	asyncio.set_event_loop(TestLoopEx())
-	client = ClientProtocol(packet2)
-	server = ServerProtocol()
-	transportToServer = MockTransportToProtocol(server)
-	transportToClient = MockTransportToProtocol(client)
-	server.connection_made(transportToClient)
-	client.connection_made(transportToServer)
-
-
-# BasicUnitTest()
-
-Normal_Unit_Test()
+if name == "server":
+	coro = playground.getConnector().create_playground_server(lambda: EchoServerProtocol(), 8888)
+	server = loop.run_until_complete(coro)
+	print("Echo Server Started at {}".format(server.sockets[0].gethostname()))
+	loop.run_forever()
+	loop.close()
+else:
+	coro = playground.getConnector().create_playground_connection(lambda: ClientProtocol(packet2, loop),"20174.1.1.1",8888)
+	transport, protocol = loop.run_until_complete(coro)
+	print("Echo Client Connected. Starting UI t:{}. p:{}".format(transport, protocol))
+	loop.run_forever()
+	loop.close()
 
 
 

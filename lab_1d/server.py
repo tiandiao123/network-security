@@ -38,7 +38,7 @@ class ServerProtocol(asyncio.Protocol):
 
 loop = asyncio.get_event_loop()
 # corotinue = loop.create_server(ServerProtocol,"127.0.0.1",8888)
-corotinue = playground.getConnector().create_playground_server(None, 8888)
+corotinue = playground.getConnector().create_playground_server(lambda: ServerProtocol(), 8888)
 server = loop.run_until_complete(corotinue)
 
 # print("I am current serving on : {}".format(server.sockets[0].getsockname()))

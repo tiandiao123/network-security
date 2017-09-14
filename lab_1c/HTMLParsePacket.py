@@ -5,7 +5,6 @@ from playground.network.packet.fieldtypes import STRING, BUFFER
 from playground.network.packet.fieldtypes import NamedPacketType, ComplexFieldType, PacketFields, Uint,StringFieldType, PacketFieldType, ListFieldType
 
 
-
 class HTMLParsePacket(PacketType):
 	DEFINITION_IDENTIFIER = "lab1b.Cuiqing_Li.MyPacket"
 	DEFINITION_VERSION = "1.0"
