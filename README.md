@@ -12,4 +12,7 @@ Location: Department of Computer Science of the JHU
 
 ### installation:
    * Please use Python3 to work on these projects
-   * Please install [PlayGround](https://github.com/CrimsonVista/Playground3) in your Linux, Windows or MacOS system, more details will be in the PDF file of lab_1b foler. 
+   * Please install [PlayGround](https://github.com/CrimsonVista/Playground3) in your Linux, Windows or MacOS system, more details will be in the PDF file of lab_1b foler. Just use the following commands to install:
+   ```
+   pip install git+https://github.com/CrimsonVista/Playground3.git
+   ```
