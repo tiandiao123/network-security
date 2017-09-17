@@ -9,6 +9,7 @@ Location: Department of Computer Science of the JHU
 ### Lab1:
    * Create a python protocol for transferring data!
    * We need to do serialization and deserialization to exchange information between server side and client side
+   * Use Playground3 to similate a TCP/IP layer, and pass pakages between different sides
 
 ### installation:
    * Please use Python3 to work on these projects
