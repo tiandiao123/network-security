@@ -8,21 +8,36 @@ from playground.asyncio_lib.testing import TestLoopEx
 from playground.network.testing import MockTransportToStorageStream
 from playground.network.testing import MockTransportToProtocol
 from playground.network.common import PlaygroundAddress
+from playground.network.common import StackingProtocol, StackingTransport, StackingProtocolFactory
 import playground
+import logging
+
 
 class HTMLParsePacket(PacketType):
 	DEFINITION_IDENTIFIER = "lab1b.Cuiqing_Li.MyPacket"
 	DEFINITION_VERSION = "1.0"
 
 	FIELDS = [
-	("file_name",STRING),
-	("num_file",Uint),
-	("content",STRING),
-	("data",BUFFER)
+	   ("file_name",STRING),
+	   ("num_file",Uint),
+	   ("content",STRING),
+	   ("data",BUFFER)
 	]
 
+packet1 = HTMLParsePacket()
+packet1.file_name = "hello_guys.html"
+packet1.num_file = 2
+packet1.content = "Hello guys"
+packet1.data = b"Let us Chat";
 
-class ServerProtocol(asyncio.Protocol):
+packet2 = HTMLParsePacket()
+packet2.file_name = "hello_world.html"
+packet2.num_file = 1;
+packet2.content = "Hi, here is website about world"
+packet2.data = b"Hi Here is website for you to know the world"
+
+
+class ServerProtocol(StackingProtocol):
 	def __init__(self):
 		self.transport = None
 		self._deserializer = None
@@ -46,7 +61,7 @@ class ServerProtocol(asyncio.Protocol):
 		self.transport = None
 
 
-class ClientProtocol(asyncio.Protocol):
+class ClientProtocol(StackingProtocol):
 	def __init__(self,packet,loop):
 		self.packet = packet
 		self.transport = None 
@@ -66,38 +81,56 @@ class ClientProtocol(asyncio.Protocol):
 		self.loop.stop()
 
 
-
-packet1 = HTMLParsePacket()
-packet1.file_name = "hello_guys.html"
-packet1.num_file = 2
-packet1.content = "Hello guys"
-packet1.data = b"Let us Chat";
-
-
-packet2 = HTMLParsePacket()
-packet2.file_name = "hello_world.html"
-packet2.num_file = 1;
-packet2.content = "Hi, here is website about world"
-packet2.data = b"Hi Here is website for you to know the world"
-
-
-
 name = sys.argv[1]
 loop = asyncio.get_event_loop()
 loop.set_debug(enabled = True)
 
+class protocol1(StackingProtocol):
+	def __init__():
+		super().__init__()
+		self.highertrasnport = None
+
+	def connection_made(self,transport):
+		self.highertrasnport = StackingProtocol(transport)
+		self.higherProtocol().connection_made(highertrasnport)
+
+	def data_received(self,data):
+		self.higherProtocol().data_received(data)
+
+	def connection_lost(self,exc):
+		self.highertrasnport = None
+
+
+class protocol2(StackingProtocol):
+	def __init__():
+		super().__init__()
+		self.highertrasnport = None
+
+	def connection_made(self,transport):
+		self.highertrasnport = StackingProtocol(transport)
+		self.higherProtocol().connection_made(highertrasnport)
+
+	def data_received(self,data):
+		self.highertrasnport().data_received(data)
+	
+	def connection_lost(self,exc):
+		self.highertrasnport = None
+
+
+
+f = StackingProtocolFactory(lambda:protocol1(),lambda:protocol2())
+ptConnector = playground.Connector(protocolStack=f)
+playground.setConnector("passthrough",ptConnector)
+
 if name == "server":
-	coro = playground.getConnector().create_playground_server(lambda: ServerProtocol(), 8888)
+	coro = playground.getConnector('passthrough').create_playground_server(lambda: ServerProtocol(), 8888)
 	server = loop.run_until_complete(coro)
 	print("Echo Server Started at {}".format(server.sockets[0].gethostname()))
 	loop.run_forever()
 	loop.close()
 else:
-	coro = playground.getConnector().create_playground_connection(lambda: ClientProtocol(packet2, loop),"20174.1.1.1",8888)
+	coro = playground.getConnector('passthrough').create_playground_connection(lambda: ClientProtocol(packet2, loop),"20174.1.1.1",8888)
 	transport, protocol = loop.run_until_complete(coro)
 	print("Echo Client Connected. Starting UI t:{}. p:{}".format(transport, protocol))
 	loop.run_forever()
 	loop.close()
-
-
-
