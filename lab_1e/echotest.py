@@ -37,12 +37,13 @@ packet2.content = "Hi, here is website about world"
 packet2.data = b"Hi Here is website for you to know the world"
 
 
-class ServerProtocol(StackingProtocol):
+class ServerProtocol(asyncio.Protocol):
 	def __init__(self):
 		self.transport = None
 		self._deserializer = None
 
 	def connection_made(self,transport):
+		#logging.debug("hello server is here")
 		client_name = transport.get_extra_info('peername')
 		self.transport = transport
 		self._deserializer = PacketType.Deserializer()
@@ -61,19 +62,21 @@ class ServerProtocol(StackingProtocol):
 		self.transport = None
 
 
-class ClientProtocol(StackingProtocol):
+class ClientProtocol(asyncio.Protocol):
 	def __init__(self,packet,loop):
 		self.packet = packet
 		self.transport = None 
 
 
 	def connection_made(self,transport):
+		#logging.debug("hello client is here")
 		pybytes = self.packet.__serialize__()
 		# print(type(pybytes))
 		# print(pybytes)
 		transport.write(pybytes)
 
 	def data_received(self, data):
+		#logging.debug("hello data is sent")
 		print("Got feedback from server side: {} ".format(data.decode()))
 
 	def connection_lost(self,exc):
@@ -81,44 +84,49 @@ class ClientProtocol(StackingProtocol):
 		self.loop.stop()
 
 
-name = sys.argv[1]
-loop = asyncio.get_event_loop()
-loop.set_debug(enabled = True)
 
-class protocol1(StackingProtocol):
-	def __init__():
-		super().__init__()
-		self.highertrasnport = None
+class passThrough1(StackingProtocol):
+	def __init__(self):
+		super(passThrough1,self).__init__()
+		self.transport = None
 
 	def connection_made(self,transport):
-		self.highertrasnport = StackingProtocol(transport)
-		self.higherProtocol().connection_made(highertrasnport)
+		self.transport = transport
+		highertransport = StackingTransport(self.transport)
+		self.higherProtocol().connection_made(highertransport)
 
 	def data_received(self,data):
 		self.higherProtocol().data_received(data)
 
 	def connection_lost(self,exc):
+		pass
 		self.highertrasnport = None
 
 
-class protocol2(StackingProtocol):
-	def __init__():
-		super().__init__()
-		self.highertrasnport = None
+
+class passThrough2(StackingProtocol):
+	def __init__(self):
+		self.transport = None
+		#self.highertrasnport = None
 
 	def connection_made(self,transport):
-		self.highertrasnport = StackingProtocol(transport)
-		self.higherProtocol().connection_made(highertrasnport)
+		self.transport = transport
+		highertransport = StackingTransport(self.transport)
+		self.higherProtocol().connection_made(highertransport)
 
 	def data_received(self,data):
-		self.highertrasnport().data_received(data)
+		self.higherProtocol().data_received(data)
 	
 	def connection_lost(self,exc):
-		self.highertrasnport = None
+		pass
+		# self.highertrasnport = None
 
 
 
-f = StackingProtocolFactory(lambda:protocol1(),lambda:protocol2())
+name = sys.argv[1]
+loop = asyncio.get_event_loop()
+loop.set_debug(enabled = True)
+f = StackingProtocolFactory(lambda:passThrough1(),lambda:passThrough2())
 ptConnector = playground.Connector(protocolStack=f)
 playground.setConnector("passthrough",ptConnector)
 
