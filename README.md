@@ -1,4 +1,4 @@
-Name : Cuiqing Li
+Team members : Cuiqing Li, Ruofan Shen, Te Meng, Menghan Bai
 
 Course : Network Security (Fall 2017)
 
