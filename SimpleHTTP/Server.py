@@ -30,6 +30,9 @@ while True:
 	conn, addr = s.accept()
 	print("Connected with {} : {}".format(str(addr[0]),str(addr[1])))
 	start_new_thread(clientThread,(conn,))
-	
+
 
 s.close()
+
+
+
