@@ -1,4 +1,4 @@
-## Network Security Lab 2
+## Network Security Lab (From CS class network security)
 
 
 ### Instructions
